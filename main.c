@@ -9,6 +9,11 @@
 uint8_t flash[FLASH_SIZE]; 
 uint8_t sram[SRAM_SIZE];
 
+//defining the base memory for addressing
+#define FLASH_BASE 0x00000000
+#define SRAM_BASE 0x20000000
+#define PERIPHERAL_BASE 0x40000000
+
 //the structure to hold register blocks
 typedef struct{
 	uint32_t ctrl; 
@@ -19,13 +24,47 @@ typedef struct{
 //creating an instance of Peripheral
 Peripheral peripheral;
 
+//defining the end memory for addressing range
+#define FLASH_END (FLASH_BASE + FLASH_SIZE)
+#define SRAM_END (SRAM_BASE + SRAM_SIZE)
+#define PERIPHERAL_END (PERIPHERAL_BASE + sizeof(peripheral))
+
 // a bus access read funtion
 uint8_t read8(uint32_t address){
-	return 0;
+	uint32_t index; 
+	if(address >= FLASH_BASE && address < FLASH_END){
+		index = address - FLASH_BASE; 
+		return flash[index];
+	}
+	else if(address >= SRAM_BASE && address < SRAM_END){
+		index = address - SRAM_BASE; 
+		return sram[index];
+	}
+	else if(address >= PERIPHERAL_BASE && address < PERIPHERAL_END){
+		index = address - PERIPHERAL_BASE; 
+		return ((uint8_t*)&peripheral)[index];
+	}
+	else{
+		printf("Read fault at address 0x%08X\n",address); 
+		return 0;
+	}
 }
 
 //a bus access write funtion
 void write8(uint32_t address, uint8_t value){
-	
+	uint32_t index;
+	if(address >= SRAM_BASE && address < SRAM_END){
+		index = address - SRAM_BASE; 
+		sram[index] = value;
+	}
+	else if(address >= PERIPHERAL_BASE && address < PERIPHERAL_END){
+		index = address - PERIPHERAL_BASE; 
+		((uint8_t*)&peripheral)[index] = value;
+	}
+	else if(address >= FLASH_BASE && address < FLASH_END){
+		printf("Error at Write Flash is read-only\n"); 
+	}else{
+		printf("Error at write on address 0x%08X\n",address);
+	}
 }
 
