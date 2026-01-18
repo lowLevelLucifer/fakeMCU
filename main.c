@@ -1,4 +1,5 @@
 #include<stdint.h>
+#include<stdio.h>
 #include<stdlib.h>
 
 //a place where the initialized variable values are stored and this is read-only
