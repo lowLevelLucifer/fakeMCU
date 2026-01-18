@@ -1,6 +1,7 @@
 #include<stdint.h>
 #include<stdlib.h>
 
+//a place where the initialized variable values are stored and this is read-only
 uint8_t flash_data_init[16] = {
 	1,2,3,4,
 	5,6,7,8,
@@ -8,11 +9,13 @@ uint8_t flash_data_init[16] = {
 	13,14,15,16,
 };
 
+//we have declared this to store our variable values from the flash which is read-only
 uint8_t sram_data[16];
 uint8_t sram_bss[16];
 
 int main(void);
 
+//this funtion helps us to store the global/intitalized/unitinialized variable values into the SRAM for the CPU to access.
 uint8_t reset_handler(){
 	for(uint8_t i = 0; i < sizeof(sram_data); i++){
 		sram_data[i] = flash_data_init[i];
@@ -20,8 +23,10 @@ uint8_t reset_handler(){
 	for(uint8_t i = 0; i < sizeof(sram_bss); i++){
 		sram_bss[i] = 0;
 	}
+	//calling the main function
 	main();
 }
+
 
 #define FLASH_SIZE (64*1024)
 #define SRAM_SIZE (4*1024)
@@ -90,8 +95,6 @@ void write8(uint32_t address, uint8_t value){
 }
 
 int main(void){
-	reset_handler();
-	
 	printf("System initialized. DATA[0] = %d\n", sram_data[0]);
     return 0;
 }
