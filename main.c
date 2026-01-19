@@ -14,7 +14,7 @@ uint8_t flash_data_init[16] = {
 uint8_t sram_data[16];
 uint8_t sram_bss[16];
 
-int main(void);
+void embedded_main(void);
 
 //this funtion helps us to store the global/intitalized/unitinialized variable values into the SRAM for the CPU to access.
 uint8_t reset_handler(){
@@ -25,7 +25,7 @@ uint8_t reset_handler(){
 		sram_bss[i] = 0;
 	}
 	//calling the main function
-	main();
+	embedded_main();
 }
 
 
@@ -95,8 +95,20 @@ void write8(uint32_t address, uint8_t value){
 	}
 }
 
+//since our main function is running on the hosted OS, the OS requires an entry point which is our main(), that main only acts as our simulation harness
+//our actual firmware entry point is rest_handler which initalize the memory and transfer control to embedded_main() which will mimick the MCU
+void embedded_main(void){
+	printf("Embedded main started\n");
+    printf("sram_data[0] = %d\n", sram_data[0]);
+    printf("sram_bss[0] = %d\n", sram_bss[0]);
+    while(1){
+		//this while loop is infinity since there is no return to the higher level runtime..
+    }
+}
+
 int main(void){
-	printf("System initialized. DATA[0] = %d\n", sram_data[0]);
+	printf("System reset\n");
+	reset_handler();//firmware entry point
     return 0;
 }
 
