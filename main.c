@@ -108,6 +108,7 @@ void embedded_main(void){
 
 int main(void){
 	printf("System reset\n");
+	//this fixes the infinity loop since we transfer the controls over to embedded main by the reset_handler as the entry point using the main fun in hosted OS
 	reset_handler();//firmware entry point
     return 0;
 }
