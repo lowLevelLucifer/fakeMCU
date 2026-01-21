@@ -104,6 +104,23 @@ void timer_isr(void){
 	system_tick++;
 }
 
+void delay_ticks(uint32_t ticks){
+	uint32_t start = system_tick; 
+	while((system_tick - start) < ticks){
+		timer_isr();
+		//wait because this is a delay function and ends autiomatically 
+	}
+}
+
+void taskA(void){
+	static uint32_t count = 0;
+	printf("Task A count = %u\n");
+}
+
+void taskB(void){
+	static uint32_t count = 0;
+	printf("Task B count = %u\n");
+}
 //since our main function is running on the hosted OS, the OS requires an entry point which is our main(), that main only acts as our simulation harness
 //our actual firmware entry point is rest_handler which initalize the memory and transfer control to embedded_main() which will mimick the MCU
 void embedded_main(void){
@@ -111,20 +128,14 @@ void embedded_main(void){
     printf("sram_data[0] = %d\n", sram_data[0]);
     printf("sram_bss[0] = %d\n", sram_bss[0]);
     while(1){
-		//this while loop is infinity since there is no return to the higher level runtime..
-		//we are not using volotile for the last_tick because this is private to only task and can be stored locally.
-    	uint32_t last_tick = 0;
-        while(1){
-					//calling the system_tick to be update everytime, this may not be ideal but learning..
-					timer_isr();
-					//localizing the time read for the tasks to be performed using the system time for the last_tick so that the task can read time.
-					if(system_tick != last_tick){
-						last_tick = system_tick;
-					}
-					printf("Tick: %u\n",system_tick);
-			//using the system time in a loop can be dangerous and we need to update it via adding delay's etc or separate time keeping loops
-        }
-	}
+		timer_isr(); 
+		while(1){
+			timer_isr(); 
+			taskA();
+			delay_ticks(5);
+			taskB();
+			delay_ticks(10);
+		}
 }
 
 int main(void){
